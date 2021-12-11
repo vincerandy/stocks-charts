@@ -23,7 +23,7 @@ import { fetchData } from "../api/helper";
 
 export default function Home() {
   const [chartData, setChartData] = useState([]);
-  const [symbol, setSymbol] = useState("MSFT");
+  const [symbols, setSymbol] = useState("MSFT");
   const [click, setClick] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +48,7 @@ export default function Home() {
       let array = [];
       const result = await fetchData("/query", {
         function: "TIME_SERIES_DAILY",
-        symbol: symbol,
+        symbol: symbols,
         outputsize: "compact",
         datatype: "json",
       });
@@ -156,7 +156,7 @@ export default function Home() {
         <div style={{ margin: "10px 0" }}>
           <input
             type='text'
-            value={symbol}
+            value={symbols}
             onChange={(e) => setSymbol(e.target.value)}
             placeholder='e.g. MSFT / CNY'
           />
