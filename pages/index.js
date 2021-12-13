@@ -1,23 +1,19 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import styles from "../styles/home.module.css";
-import {
-  EventTracker,
-  Animation,
-  ValueScale,
-} from "@devexpress/dx-react-chart";
-import {
-  Chart,
-  ArgumentAxis,
+import Chart, {
+  CommonSeriesSettings,
+  Series,
+  Reduction,
+  Label,
   ValueAxis,
-  LineSeries,
-  AreaSeries,
-  BarSeries,
-  ScatterSeries,
-  ZoomAndPan,
   Tooltip,
-} from "@devexpress/dx-react-chart-bootstrap4";
-import "@devexpress/dx-react-chart-bootstrap4/dist/dx-react-chart-bootstrap4.css";
+  ZoomAndPan,
+  Grid,
+  Pane,
+  Legend,
+  ScrollBar,
+} from "devextreme-react/chart";
 import ClipLoader from "react-spinners/ClipLoader";
 import { fetchData } from "../api/helper";
 
@@ -27,22 +23,8 @@ export default function Home() {
   const [click, setClick] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [maxPriceValue, setMaxPriceValue] = useState(0);
-  const [maxValue, setMaxValue] = useState(0);
-
-  const [averagePriceValue, setAveragePriceValue] = useState(0);
-  const [averageValue, setAverageValue] = useState(0);
-
-  const Label = (symbol) => (props) => {
-    const { text } = props;
-    return <ValueAxis.Label {...props} text={text + symbol} />;
-  };
-  const PriceLabel = Label("$");
-  const LabelWithMillions = Label("K");
-
   useEffect(() => {
     async function getData() {
-      setChartData([]);
       setLoading(true);
 
       let array = [];
@@ -52,7 +34,6 @@ export default function Home() {
         outputsize: "compact",
         datatype: "json",
       });
-      // console.log("result", result?.["Time Series (Daily)"]);
 
       if (result === 429) {
         alert(
@@ -60,58 +41,24 @@ export default function Home() {
         );
       } else {
         Object.keys(result?.["Time Series (Daily)"])
-          .filter((item) => item.includes("-11-"))
+          // .filter((item) => item.includes("-11-"))
           .sort()
           .map((data) => {
             array.push({
-              date: data.substr(8, 2),
-              real_date: data,
-              price: parseFloat(
-                result?.["Time Series (Daily)"][data]["4. close"]
-              ),
-              volume: parseFloat(
+              date: data,
+              o: parseFloat(result?.["Time Series (Daily)"][data]["1. open"]),
+              h: parseFloat(result?.["Time Series (Daily)"][data]["2. high"]),
+              l: parseFloat(result?.["Time Series (Daily)"][data]["3. low"]),
+              c: parseFloat(result?.["Time Series (Daily)"][data]["4. close"]),
+              v: parseFloat(
                 result?.["Time Series (Daily)"][data]["5. volume"] / 1000
               ),
-              open: parseFloat(
-                result?.["Time Series (Daily)"][data]["1. open"]
-              ),
-              high: parseFloat(
-                result?.["Time Series (Daily)"][data]["2. high"]
-              ),
-              low: parseFloat(result?.["Time Series (Daily)"][data]["3. low"]),
             });
           });
 
-        setTimeout(() => {
-          setLoading(false);
-          setChartData(array);
-        }, 2000);
-
-        const averagePrice =
-          array.reduce((total, next) => total + next.price, 0) / array.length;
-        setAveragePriceValue(averagePrice / 4);
-
-        const averageVolume =
-          array.reduce((total, next) => total + next.volume, 0) / array.length;
-        setAverageValue(averageVolume);
-
-        const maxPrice = Math.max.apply(
-          Math,
-          array.map(function (o) {
-            return o.price;
-          })
-        );
-        setMaxPriceValue(maxPrice);
-
-        const maxVolume = Math.max.apply(
-          Math,
-          array.map(function (o) {
-            return o.volume;
-          })
-        );
-        setMaxValue(maxVolume);
+        setLoading(false);
+        setChartData(array);
       }
-      // console.log("array", array);
     }
     getData();
   }, [click]);
@@ -134,6 +81,21 @@ export default function Home() {
     return <table>{items}</table>;
   };
 
+  const customizeTooltip = (arg) => {
+    return {
+      text: arg.openValue
+        ? `Open: $${arg.openValue}<br/>
+Close: $${arg.closeValue}<br/>
+High: $${arg.highValue}<br/>
+Low: $${arg.lowValue}<br/>`
+        : `Volume: ${arg.value / 1000}K`,
+    };
+  };
+
+  const customizeText = (arg) => {
+    return `$${arg.valueText}`;
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -150,7 +112,7 @@ export default function Home() {
           href='https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css'
         />
       </Head>
-
+      {console.log("chartData", chartData)}
       <main className={styles.main}>
         Daily Prices (open, high, low, close) and Volumes | <b>November 2021</b>
         <div style={{ margin: "10px 0" }}>
@@ -162,7 +124,7 @@ export default function Home() {
           />
           <button onClick={() => setClick(!click)}>Search</button>
         </div>
-        <div className='card'>
+        <div className=''>
           {loading && (
             <div
               style={{
@@ -178,59 +140,59 @@ export default function Home() {
             </div>
           )}
 
-          {chartData && chartData.length > 0 && (
-            <Chart data={chartData}>
-              <ValueScale
-                name='price'
-                modifyDomain={(domain) => [
-                  domain[0],
-                  maxPriceValue + averagePriceValue,
-                ]}
-              />
-              <ValueScale
-                name='volume'
-                modifyDomain={(domain) => [domain[0], maxValue + averageValue]}
+          {!loading && chartData && chartData.length > 0 && (
+            <Chart id='chart' dataSource={chartData}>
+              <CommonSeriesSettings argumentField='date' type='candlestick' />
+              <Series
+                name='Stock Price'
+                pane='topPane'
+                axis='stocks'
+                type='candleStick'
+                openValueField='o'
+                highValueField='h'
+                lowValueField='l'
+                closeValueField='c'>
+                <Reduction color='red' />
+              </Series>
+
+              <Series
+                name='Volume'
+                pane='bottomPane'
+                axis='volume'
+                type='bar'
+                valueField='v'
+                color='#008fd8'
+                barPadding={0.5}
               />
 
-              <ArgumentAxis />
+              {/* <ArgumentAxis workdaysOnly={true}>
+                <Label customizeText={customizeText} />
+              </ArgumentAxis> */}
+              <ValueAxis tickInterval={1} name='stocks' pane='topPane'>
+                <Label customizeText={customizeText} />
+                <Grid visible={true} />
+              </ValueAxis>
+              <ValueAxis name='volume' pane='bottomPane'>
+                <Grid visible={true} />
+              </ValueAxis>
 
-              <ValueAxis scaleName='price' labelComponent={PriceLabel} />
-              <ValueAxis
-                scaleName='volume'
-                position='right'
-                labelComponent={LabelWithMillions}
-                showGrid={false}
+              <Pane name='topPane' height={400} />
+              <Pane name='bottomPane' height={150} />
+
+              <Legend
+                verticalAlignment='bottom'
+                horizontalAlignment='center'
+                visible={false}
               />
 
-              <AreaSeries
-                valueField='price'
-                argumentField='date'
-                scaleName='price'
-              />
-              <LineSeries
-                valueField='price'
-                argumentField='date'
-                scaleName='price'
-                color={"blue"}
-              />
-
-              <EventTracker />
               <Tooltip
-                contentComponent={TooltipContent}
-                // targetItem={(e) => console.log("target", e)}
+                shared={true}
+                enabled={true}
+                location='edge'
+                customizeTooltip={customizeTooltip}
               />
-
-              <BarSeries
-                valueField='volume'
-                argumentField='date'
-                scaleName='volume'
-                color={"lightgreen"}
-              />
-
-              <Animation />
-              {/* <HoverState /> */}
-
-              <ZoomAndPan />
+              <ScrollBar visible={true} />
+              <ZoomAndPan argumentAxis='both' />
             </Chart>
           )}
         </div>

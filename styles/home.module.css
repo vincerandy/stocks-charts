@@ -1,6 +1,10 @@
 .container {
   padding: 0 2rem;
 }
+#chart {
+  height: 550px;
+  width: 100%;
+}
 
 .main {
   min-height: 100vh;
