@@ -4,8 +4,7 @@ export const fetchData = async (endpoint, params) => {
   const config = {
     headers: {
       "x-rapidapi-host": "alpha-vantage.p.rapidapi.com",
-      // "x-rapidapi-key": "09cd521d93msh6cf6552952682efp196d73jsn7ab29ddb05da",
-      "x-rapidapi-key": "00d47ddd28mshfc9942ff52fa0c9p1d1116jsn5220de20fb8d",
+      "x-rapidapi-key": "09cd521d93msh6cf6552952682efp196d73jsn7ab29ddb05da",
     },
     params,
   };

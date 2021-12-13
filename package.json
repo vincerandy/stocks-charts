@@ -9,9 +9,6 @@
     "heroku-postbuild": "./node_modules/next/dist/bin/next build"
   },
   "dependencies": {
-    "@devexpress/dx-react-chart": "^2.7.6",
-    "@devexpress/dx-react-chart-bootstrap4": "^2.7.6",
-    "@devexpress/dx-react-core": "^2.7.6",
     "axios": "^0.24.0",
     "devextreme": "21.2.4",
     "devextreme-react": "21.2.4",
