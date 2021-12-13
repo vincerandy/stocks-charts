@@ -177,7 +177,7 @@ Low: $${arg.lowValue}<br/>`
               </ValueAxis>
 
               <Pane name='topPane' height={400} />
-              <Pane name='bottomPane' height={150} />
+              <Pane name='bottomPane' height={200} />
 
               <Legend
                 verticalAlignment='bottom'
