@@ -22,6 +22,7 @@ export default function Home() {
   const [symbols, setSymbol] = useState("MSFT");
   const [click, setClick] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [type, setType] = useState(1);
 
   useEffect(() => {
     async function getData() {
@@ -63,32 +64,17 @@ export default function Home() {
     getData();
   }, [click]);
 
-  const TooltipContent = (e) => {
-    const items = chartData.map((data, index) => {
-      if (index === parseInt(e.targetItem.point - 1)) {
-        return (
-          <div>
-            <div>{data.real_date}</div>
-            <div>O : ${data.open}</div>
-            <div>H : ${data.high}</div>
-            <div>L : ${data.low}</div>
-            <div>C : ${data.price}</div>
-            <div>V : {data.volume}K</div>
-          </div>
-        );
-      }
-    });
-    return <table>{items}</table>;
-  };
-
   const customizeTooltip = (arg) => {
     return {
-      text: arg.openValue
-        ? `Open: $${arg.openValue}<br/>
+      text:
+        arg.seriesName === "Stock Price Candle Stick"
+          ? `Open: $${arg.openValue}<br/>
 Close: $${arg.closeValue}<br/>
 High: $${arg.highValue}<br/>
 Low: $${arg.lowValue}<br/>`
-        : `Volume: ${arg.value / 1000}K`,
+          : arg.seriesName === "Stock Price Line Series"
+          ? `$${arg.value}`
+          : `Volume: ${arg.value / 1000}K`,
     };
   };
 
@@ -123,6 +109,24 @@ Low: $${arg.lowValue}<br/>`
             placeholder='e.g. MSFT / CNY'
           />
           <button onClick={() => setClick(!click)}>Search</button>
+          <input
+            type='radio'
+            name='rdoChart'
+            value={1}
+            style={{ marginLeft: "20px" }}
+            onClick={() => setType(1)}
+            checked={type === 1 ? true : false}
+          />{" "}
+          Candle Stick
+          <input
+            type='radio'
+            name='rdoChart'
+            value={2}
+            style={{ marginLeft: "20px" }}
+            onClick={() => setType(2)}
+            checked={type === 2 ? true : false}
+          />{" "}
+          Line Series
         </div>
         <div className=''>
           {loading && (
@@ -142,18 +146,29 @@ Low: $${arg.lowValue}<br/>`
 
           {!loading && chartData && chartData.length > 0 && (
             <Chart id='chart' dataSource={chartData}>
-              <CommonSeriesSettings argumentField='date' type='candlestick' />
-              <Series
-                name='Stock Price'
-                pane='topPane'
-                axis='stocks'
-                type='candleStick'
-                openValueField='o'
-                highValueField='h'
-                lowValueField='l'
-                closeValueField='c'>
-                <Reduction color='red' />
-              </Series>
+              <CommonSeriesSettings argumentField='date' />
+
+              {type === 1 ? (
+                <Series
+                  name='Stock Price Candle Stick'
+                  pane='topPane'
+                  axis='stocks'
+                  type='candleStick'
+                  openValueField='o'
+                  highValueField='h'
+                  lowValueField='l'
+                  closeValueField='c'>
+                  <Reduction color='red' />
+                </Series>
+              ) : (
+                <Series
+                  name='Stock Price Line Series'
+                  type='spline'
+                  axis='stocks'
+                  valueField='c'
+                  pane='topPane'
+                />
+              )}
 
               <Series
                 name='Volume'
@@ -165,9 +180,6 @@ Low: $${arg.lowValue}<br/>`
                 barPadding={0.5}
               />
 
-              {/* <ArgumentAxis workdaysOnly={true}>
-                <Label customizeText={customizeText} />
-              </ArgumentAxis> */}
               <ValueAxis tickInterval={1} name='stocks' pane='topPane'>
                 <Label customizeText={customizeText} />
                 <Grid visible={true} />
