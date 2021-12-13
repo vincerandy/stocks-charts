@@ -114,7 +114,7 @@ Low: $${arg.lowValue}<br/>`
       </Head>
       {console.log("chartData", chartData)}
       <main className={styles.main}>
-        Daily Prices (open, high, low, close) and Volumes | <b>November 2021</b>
+        Daily Prices (open, high, low, close) and Volumes
         <div style={{ margin: "10px 0" }}>
           <input
             type='text'
