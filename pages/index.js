@@ -112,7 +112,7 @@ Low: $${arg.lowValue}<br/>`
           href='https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css'
         />
       </Head>
-      {console.log("chartData", chartData)}
+
       <main className={styles.main}>
         Daily Prices (open, high, low, close) and Volumes
         <div style={{ margin: "10px 0" }}>
