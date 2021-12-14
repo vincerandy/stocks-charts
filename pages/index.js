@@ -42,9 +42,8 @@ export default function Home() {
         );
       } else {
         Object.keys(result?.["Time Series (Daily)"])
-          // .filter((item) => item.includes("-11-"))
           .sort()
-          .map((data) => {
+          .forEach((data) => {
             array.push({
               date: data,
               o: parseFloat(result?.["Time Series (Daily)"][data]["1. open"]),
